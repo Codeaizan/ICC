@@ -81,3 +81,68 @@ def test_registration_quality_accepts_complete_in_brain_labels():
 
     assert quality.passed is True
     assert quality.regions_present == 10
+
+
+def test_hybrid_ml_can_flag_region_with_some_hu_drop():
+    """ML evidence alone flags a region when there is at least some HU drop."""
+    shape = (4, 4, 2)
+    ct = np.full(shape, 50.0, dtype=np.float32)
+    mirrored = np.full(shape, 50.0, dtype=np.float32)
+    labels = np.zeros(shape, dtype=np.float32)
+    heatmap = np.zeros(shape, dtype=np.float32)
+    ml_prob = np.zeros(shape, dtype=np.float32)
+
+    for label in range(1, 11):
+        labels.flat[label - 1] = label
+
+    # Region 1: small HU drop (below rule threshold) but ML fires
+    ct.flat[0] = 49.0
+    mirrored.flat[0] = 50.0
+    ml_prob.flat[0] = 0.9  # ML confident
+
+    result = score_regions(labels, ct, mirrored, heatmap, ml_prob=ml_prob, ml_fraction_threshold=0.10)
+
+    assert result.regions[0].affected is True
+    assert result.regions[0].evidence == "ml_assisted"
+    assert result.regions[1].affected is False
+
+
+def test_hybrid_ml_does_not_flag_without_hu_drop():
+    """ML alone cannot flag a region when there is zero HU drop."""
+    shape = (4, 4, 2)
+    ct = np.full(shape, 50.0, dtype=np.float32)
+    mirrored = np.full(shape, 50.0, dtype=np.float32)
+    labels = np.zeros(shape, dtype=np.float32)
+    heatmap = np.zeros(shape, dtype=np.float32)
+    ml_prob = np.zeros(shape, dtype=np.float32)
+
+    for label in range(1, 11):
+        labels.flat[label - 1] = label
+
+    # Region 1: ML fires but no HU drop at all
+    ml_prob.flat[0] = 0.9
+
+    result = score_regions(labels, ct, mirrored, heatmap, ml_prob=ml_prob, ml_fraction_threshold=0.10)
+
+    assert result.regions[0].affected is False
+    assert result.regions[0].evidence == "none"
+
+
+def test_scoring_without_ml_prob_is_backward_compatible():
+    """When ml_prob is None, behaviour is identical to the original."""
+    shape = (4, 4, 2)
+    ct = np.full(shape, 50.0, dtype=np.float32)
+    mirrored = np.full(shape, 50.0, dtype=np.float32)
+    labels = np.zeros(shape, dtype=np.float32)
+    heatmap = np.zeros(shape, dtype=np.float32)
+
+    for label in range(1, 11):
+        labels.flat[label - 1] = label
+
+    result = score_regions(labels, ct, mirrored, heatmap)
+
+    assert result.score == 10
+    for region in result.regions:
+        assert region.ml_lesion_fraction == 0.0
+        assert region.evidence == "none"
+
