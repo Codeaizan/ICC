@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import random
+from collections import OrderedDict
 from pathlib import Path
 
 import nibabel as nib
@@ -25,7 +26,8 @@ class AISDSliceDataset(Dataset):
         if max_cases is not None:
             rows = rows[:max_cases]
         self.slices: list[tuple[str, str, int]] = []
-        self._volume_cache: dict[tuple[str, str], tuple[np.ndarray, np.ndarray]] = {}
+        self._volume_cache: OrderedDict[tuple[str, str], tuple[np.ndarray, np.ndarray]] = OrderedDict()
+        self._cache_limit = 2
         for row in rows:
             ct_image = nib.load(row["ct_path"])
             for index in range(ct_image.shape[2]):
@@ -40,8 +42,12 @@ class AISDSliceDataset(Dataset):
         if cache_key not in self._volume_cache:
             self._volume_cache[cache_key] = (
                 nib.load(ct_path).get_fdata(dtype=np.float32),
-                nib.load(mask_path).get_fdata(),
+                nib.load(mask_path).get_fdata(dtype=np.float32),
             )
+            while len(self._volume_cache) > self._cache_limit:
+                self._volume_cache.popitem(last=False)
+        else:
+            self._volume_cache.move_to_end(cache_key)
         ct, mask = self._volume_cache[cache_key]
         image = normalize_ct(ct[:, :, slice_index])
         mirrored = np.flip(image, axis=0).copy()
