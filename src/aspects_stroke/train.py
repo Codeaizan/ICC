@@ -24,18 +24,19 @@ class AISDSliceDataset(Dataset):
             rows = [row for row in csv.DictReader(handle) if row["split"] == split]
         if max_cases is not None:
             rows = rows[:max_cases]
-        self.slices: list[tuple[np.ndarray, np.ndarray, int]] = []
+        self.slices: list[tuple[str, str, int]] = []
         for row in rows:
-            ct = nib.load(row["ct_path"]).get_fdata(dtype=np.float32)
-            mask = nib.load(row["lesion_path"]).get_fdata()
-            for index in range(ct.shape[2]):
-                self.slices.append((ct, mask, index))
+            ct_image = nib.load(row["ct_path"])
+            for index in range(ct_image.shape[2]):
+                self.slices.append((row["ct_path"], row["lesion_path"], index))
 
     def __len__(self) -> int:
         return len(self.slices)
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
-        ct, mask, slice_index = self.slices[index]
+        ct_path, mask_path, slice_index = self.slices[index]
+        ct = nib.load(ct_path).get_fdata(dtype=np.float32)
+        mask = nib.load(mask_path).get_fdata()
         image = normalize_ct(ct[:, :, slice_index])
         mirrored = np.flip(image, axis=0).copy()
         difference = np.clip((mirrored - image) / np.maximum(mirrored, 0.05), 0.0, 1.0)
