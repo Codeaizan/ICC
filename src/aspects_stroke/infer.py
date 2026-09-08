@@ -120,12 +120,20 @@ def evaluate_split(
         if case.lesion_path is None or not Path(case.ct_path).exists():
             results.append({"case_id": case.case_id, "status": "skipped"})
             continue
+        prob = predict_volume(model, case.ct_path, device, image_size)
+        binary = (prob >= threshold).astype(np.float32)
+
+        if output_dir is not None:
+            case_dir = output_dir / case.case_id
+            case_dir.mkdir(parents=True, exist_ok=True)
+            save_prediction_nifti(prob, case.ct_path, case_dir / "ml_prob.nii.gz")
+            save_prediction_nifti(
+                prob, case.ct_path, case_dir / "ml_pred.nii.gz", threshold
+            )
+
         if not Path(case.lesion_path).exists():
             results.append({"case_id": case.case_id, "status": "missing_mask"})
             continue
-
-        prob = predict_volume(model, case.ct_path, device, image_size)
-        binary = (prob >= threshold).astype(np.float32)
 
         target = nib.load(str(case.lesion_path)).get_fdata(dtype=np.float32)
         target_lesion = np.isin(target, [1, 2, 3, 5]).astype(np.float32)
@@ -135,14 +143,6 @@ def evaluate_split(
             continue
 
         metrics = _compute_metrics(binary, target_lesion)
-
-        if output_dir is not None:
-            case_dir = output_dir / case.case_id
-            case_dir.mkdir(parents=True, exist_ok=True)
-            save_prediction_nifti(prob, case.ct_path, case_dir / "ml_prob.nii.gz")
-            save_prediction_nifti(
-                prob, case.ct_path, case_dir / "ml_pred.nii.gz", threshold
-            )
 
         results.append({
             "case_id": case.case_id,
@@ -262,7 +262,7 @@ def main() -> None:
     print("Checkpoint loaded.", flush=True)
 
     # Read manifest
-    cases = [c for c in read_manifest(args.manifest, root=Path(args.manifest).parent)
+    cases = [c for c in read_manifest(args.manifest, root=Path.cwd())
              if c.split == args.split]
     print(f"Split '{args.split}': {len(cases)} cases", flush=True)
 
