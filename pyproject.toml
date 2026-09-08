@@ -36,6 +36,7 @@ aspects-evaluate = "aspects_stroke.evaluate:main"
 aspects-tune = "aspects_stroke.tune:main"
 aspects-split = "aspects_stroke.split:main"
 aspects-train = "aspects_stroke.train:main"
+aspects-infer = "aspects_stroke.infer:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
