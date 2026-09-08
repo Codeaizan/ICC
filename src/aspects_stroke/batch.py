@@ -21,6 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sgl-image")
     parser.add_argument("--sgl-labels")
     parser.add_argument("--atlas-dir", help="directory containing age-specific BGL/SGL atlas files")
+    parser.add_argument("--ml-predictions", help="directory containing pre-computed ML predictions (<case_id>/ml_prob.nii.gz)")
     parser.add_argument("--output", required=True)
     parser.add_argument("--split", default=None)
     parser.add_argument("--workers", type=int, default=6, help="parallel case processes; use 4-6 on an i5-12450H")
@@ -46,6 +47,12 @@ def run_batch_case(case, args):
     sgl_labels = args.sgl_labels
     if args.atlas_dir:
         bgl_image, bgl_labels, sgl_image, sgl_labels = atlas_for_case(args.atlas_dir, case.age_group)
+    ml_prob_path = None
+    if args.ml_predictions:
+        prob_file = Path(args.ml_predictions) / case.case_id / "ml_prob.nii.gz"
+        if prob_file.exists():
+            ml_prob_path = prob_file
+
     try:
         report = run_case(
             case.ct_path,
@@ -56,6 +63,7 @@ def run_batch_case(case, args):
             bgl_labels,
             sgl_image,
             sgl_labels,
+            ml_prob_path=ml_prob_path,
         )
     except (OSError, RuntimeError, ValueError) as error:
         status = "abstain" if str(error) == "unknown_age_group" else "error"

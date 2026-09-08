@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import nibabel as nib
+import numpy as np
 import SimpleITK as sitk
 
 from .io import load_nifti, save_nifti
@@ -28,6 +30,7 @@ def run_case(
     bgl_labels_path: str | Path | None = None,
     sgl_image_path: str | Path | None = None,
     sgl_labels_path: str | Path | None = None,
+    ml_prob_path: str | Path | None = None,
     *,
     drop_threshold: float = 0.08,
     lesion_fraction_threshold: float = 0.05,
@@ -91,6 +94,7 @@ def run_case(
         ct,
         mirrored,
         heatmap,
+        ml_prob=nib.load(str(ml_prob_path)).get_fdata(dtype=np.float32) if ml_prob_path else None,
         drop_threshold=drop_threshold,
         lesion_fraction_threshold=lesion_fraction_threshold,
     )

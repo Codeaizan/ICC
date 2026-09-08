@@ -14,6 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bgl-labels")
     parser.add_argument("--sgl-image")
     parser.add_argument("--sgl-labels")
+    parser.add_argument("--ml-prob", help="ML probability map NIfTI")
     parser.add_argument("--output", required=True, help="output directory")
     parser.add_argument("--drop-threshold", type=float, default=0.08)
     parser.add_argument("--lesion-fraction-threshold", type=float, default=0.05)
@@ -33,6 +34,7 @@ def main() -> None:
         args.bgl_labels,
         args.sgl_image,
         args.sgl_labels,
+        args.ml_prob,
         drop_threshold=args.drop_threshold,
         lesion_fraction_threshold=args.lesion_fraction_threshold,
     ), indent=2))
