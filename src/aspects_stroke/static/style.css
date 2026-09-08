@@ -15,7 +15,7 @@
     --bgl-color: #3b82f6;
     --sgl-color: #10b981;
 
-    --font-sans: 'Inter', sans-serif;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
