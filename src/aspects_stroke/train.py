@@ -10,6 +10,7 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
@@ -20,7 +21,7 @@ def normalize_ct(ct: np.ndarray) -> np.ndarray:
 
 
 class AISDSliceDataset(Dataset):
-    def __init__(self, manifest: str | Path, split: str, max_cases: int | None = None):
+    def __init__(self, manifest: str | Path, split: str, max_cases: int | None = None, image_size: int = 256):
         with Path(manifest).open(newline="", encoding="utf-8") as handle:
             rows = [row for row in csv.DictReader(handle) if row["split"] == split]
         if max_cases is not None:
@@ -28,6 +29,7 @@ class AISDSliceDataset(Dataset):
         self.slices: list[tuple[str, str, int]] = []
         self._volume_cache: OrderedDict[tuple[str, str], tuple[np.ndarray, np.ndarray]] = OrderedDict()
         self._cache_limit = 2
+        self.image_size = image_size
         for row in rows:
             ct_image = nib.load(row["ct_path"])
             for index in range(ct_image.shape[2]):
@@ -53,7 +55,11 @@ class AISDSliceDataset(Dataset):
         mirrored = np.flip(image, axis=0).copy()
         difference = np.clip((mirrored - image) / np.maximum(mirrored, 0.05), 0.0, 1.0)
         target = np.isin(mask[:, :, slice_index], [1, 2, 3, 5]).astype(np.float32)
-        return torch.from_numpy(np.stack((image, mirrored, difference))), torch.from_numpy(target[None, ...])
+        images = torch.from_numpy(np.stack((image, mirrored, difference))).unsqueeze(0)
+        target_tensor = torch.from_numpy(target[None, ...]).unsqueeze(0)
+        images = F.interpolate(images, size=(self.image_size, self.image_size), mode="bilinear", align_corners=False)
+        target_tensor = F.interpolate(target_tensor, size=(self.image_size, self.image_size), mode="nearest")
+        return images.squeeze(0), target_tensor.squeeze(0)
 
 
 class DoubleConv(nn.Module):
@@ -134,6 +140,7 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--device", choices=("auto", "cuda", "cpu"), default="auto")
     parser.add_argument("--no-amp", action="store_true", help="disable mixed precision")
+    parser.add_argument("--size", type=int, default=256, help="square training resolution")
     parser.add_argument("--seed", type=int, default=20260908)
     args = parser.parse_args()
     random.seed(args.seed)
@@ -143,8 +150,8 @@ def main() -> None:
     if args.device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is not available")
     device = torch.device("cuda" if args.device == "auto" and torch.cuda.is_available() else args.device if args.device != "auto" else "cpu")
-    train_data = AISDSliceDataset(args.manifest, "train", args.max_cases)
-    validation_data = AISDSliceDataset(args.manifest, "validation", args.max_cases)
+    train_data = AISDSliceDataset(args.manifest, "train", args.max_cases, args.size)
+    validation_data = AISDSliceDataset(args.manifest, "validation", args.max_cases, args.size)
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=device.type == "cuda")
     validation_loader = DataLoader(validation_data, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=device.type == "cuda")
     model = SmallUNet().to(device)

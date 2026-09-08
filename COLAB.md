@@ -33,6 +33,7 @@ Start with a five-case smoke training run:
   --max-cases 5 \
   --batch-size 8 \
   --workers 2 \
+  --size 256 \
   --device cuda
 ```
 
@@ -45,6 +46,7 @@ Then train the full baseline:
   --epochs 30 \
   --batch-size 8 \
   --workers 2 \
+  --size 256 \
   --device cuda
 ```
 
