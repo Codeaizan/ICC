@@ -48,6 +48,7 @@ def score_regions(
     lesion_fraction_threshold: float = 0.05,
     ml_prob: np.ndarray | None = None,
     ml_fraction_threshold: float = 0.10,
+    ml_prob_threshold: float = 0.07,
 ) -> AspectsResult:
     """Score registered labels using explainable HU asymmetry and heatmap evidence.
 
@@ -88,7 +89,7 @@ def score_regions(
         ml_fraction = 0.0
         ml_affected = False
         if ml_prob is not None:
-            ml_fraction = float(np.mean(ml_prob[region] > 0.5))
+            ml_fraction = float(np.mean(ml_prob[region] > ml_prob_threshold))
             # Require at least some HU drop to avoid pure-ML false positives
             ml_affected = ml_fraction >= ml_fraction_threshold and relative_drop > 0
 

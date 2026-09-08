@@ -65,7 +65,7 @@ def compare_case(
             # Hybrid: rule-based OR (ML positive AND some symmetry evidence)
             hybrid_pred = np.maximum(
                 rule_pred,
-                ((ml_prob >= 0.5) & (heatmap > 0)).astype(np.float32),
+                ((ml_prob >= ml_threshold) & (heatmap > 0)).astype(np.float32),
             )
             result["hybrid"] = _compute_metrics(hybrid_pred, target)
         else:
