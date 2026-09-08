@@ -45,9 +45,34 @@ The current rule-based detector is useful for demonstrating the complete workflo
 
 The trainer supports CUDA, T4 mixed precision, multiple data-loader workers, validation-best checkpointing, and JSON history. Colab instructions are in [COLAB.md](COLAB.md).
 
+A 30-epoch run on a T4 at 256x256 completed but the model collapsed after epoch 1 (train/validation Dice flatlined from epoch 2 onward). The best checkpoint (epoch 1) achieves validation Dice `0.572` using training-time smoothed Dice. The optimal probability threshold on validation was `0.07`.
+
+### ML inference and evaluation
+
+`aspects-infer` loads the trained checkpoint, predicts per-slice probability maps, reconstructs 3D probability volumes, and evaluates against ground-truth masks. Threshold selection uses validation; test evaluation uses the locked threshold.
+
+### Hybrid scoring
+
+`score_regions` accepts an optional `ml_prob` volume alongside the existing rule-based features. A region is flagged as affected if either:
+
+- the original rule-based criteria are met (HU drop ≥ threshold AND heatmap fraction ≥ threshold); or
+- the ML lesion fraction exceeds `ml_fraction_threshold` AND there is a positive HU drop (`relative_drop > 0`).
+
+The `evidence` field records which signal triggered the decision: `"rule_based"`, `"ml_assisted"`, `"both"`, or `"none"`. This keeps scoring fully explainable.
+
 ### Evaluation status
 
-The first evaluation covered 324 scored cases and 2 abstentions. Mean lesion Dice was approximately `0.057`, median Dice approximately `0.024`, and region flag agreement approximately `73.1%`. Exploratory threshold tuning on 50 cases selected `0.14`, but the improvement was small and the manifest split was not used for held-out calibration at that time.
+Rule-based evaluation (324 scored, 2 abstentions): mean lesion Dice `~0.057`, region agreement `~73.1%`.
+
+Held-out test evaluation (50 cases, threshold selected on validation):
+
+| Approach | Dice | Precision | Recall | F1 |
+|----------|------|-----------|--------|-----|
+| Rule-based | 0.039 | 0.022 | 0.553 | 0.039 |
+| ML-only | 0.046 | 0.027 | 0.445 | 0.046 |
+| Hybrid | 0.040 | 0.022 | 0.586 | 0.040 |
+
+The hybrid improves recall by 3.3 percentage points over the rule-based approach without degrading precision. All voxel-level Dice values remain low due to high false-positive rates; region-level scoring with atlas registration provides more useful clinical granularity.
 
 ### How a friend reproduces the work
 
@@ -59,13 +84,14 @@ The first evaluation covered 324 scored cases and 2 abstentions. Mean lesion Dic
 6. Run the five-case smoke test before a full batch.
 7. Inspect overlays and quality flags.
 8. Train the ML baseline in Colab using [COLAB.md](COLAB.md).
-9. Evaluate only after selecting thresholds on training/validation data.
+9. Run `aspects-infer --sweep-threshold` on validation to find the optimal threshold.
+10. Run `aspects-infer --threshold <value>` on test for held-out evaluation.
+11. Run `aspects-compare` for a three-way detector comparison.
 
 ## Remaining work
 
-- Integrate ML probability maps into the rule-based ASPECTS scorer.
+- Improve ML training: address model collapse, add data augmentation, class weighting, or a deeper architecture.
 - Improve skull stripping, midline estimation, and 2D/3D registration.
-- Define and enforce train/validation/test evaluation for every reported metric.
 - Investigate missing DICOM case `0073366` and CT/mask mismatch case `0226134`.
 - Validate externally on APIS after model and thresholds are locked.
 - Build a clinician-facing viewer and complete clinical/regulatory validation.
