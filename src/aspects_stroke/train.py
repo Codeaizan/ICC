@@ -152,7 +152,8 @@ def main() -> None:
     device = torch.device("cuda" if args.device == "auto" and torch.cuda.is_available() else args.device if args.device != "auto" else "cpu")
     train_data = AISDSliceDataset(args.manifest, "train", args.max_cases, args.size)
     validation_data = AISDSliceDataset(args.manifest, "validation", args.max_cases, args.size)
-    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=device.type == "cuda")
+    # Keep neighboring slices together so each worker's small volume cache is effective.
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=device.type == "cuda")
     validation_loader = DataLoader(validation_data, batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=device.type == "cuda")
     model = SmallUNet().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
