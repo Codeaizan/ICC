@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASPECTS Clinical Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <h1>ASPECTS</h1>
+                <p>Clinical Viewer Prototype</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="case-search" placeholder="Search cases...">
+            </div>
+            <div class="case-list-container">
+                <ul id="case-list" class="case-list">
+                    <!-- Cases injected here -->
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-nav glass-panel">
+                <h2 id="current-case-id">Select a Case</h2>
+                <div id="status-badge" class="badge"></div>
+            </header>
+
+            <div class="dashboard" id="dashboard" style="display: none;">
+                <!-- Left Column: Image -->
+                <div class="image-section glass-panel">
+                    <div class="image-header">
+                        <h3>Overlay Analysis</h3>
+                        <div class="legend">
+                            <span class="legend-item"><span class="color-box heatmap-color"></span> Heatmap</span>
+                            <span class="legend-item"><span class="color-box bgl-color"></span> BGL</span>
+                            <span class="legend-item"><span class="color-box sgl-color"></span> SGL</span>
+                        </div>
+                    </div>
+                    <div class="image-container">
+                        <img id="overlay-img" src="" alt="Overlay Image" class="overlay-image">
+                    </div>
+                </div>
+
+                <!-- Right Column: Scoring & Details -->
+                <div class="details-section">
+                    
+                    <!-- Score Card -->
+                    <div class="score-card glass-panel" id="score-card">
+                        <div class="score-title">ASPECTS Score</div>
+                        <div class="score-value" id="aspects-score">-</div>
+                        <div class="score-subtitle">Out of 10</div>
+                    </div>
+
+                    <!-- Warning Banner -->
+                    <div class="warning-banner glass-panel" id="warning-banner" style="display: none;">
+                        <svg class="warning-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <div class="warning-content">
+                            <h4>Score Abstained</h4>
+                            <p id="warning-reason">Reason goes here</p>
+                        </div>
+                    </div>
+
+                    <!-- Regions Grid -->
+                    <div class="regions-panel glass-panel" id="regions-panel">
+                        <h3>Regional Analysis</h3>
+                        <div class="regions-grid" id="regions-grid">
+                            <!-- Region cards injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="metadata-panel glass-panel">
+                        <h3>Registration Metadata</h3>
+                        <div class="metadata-content" id="metadata-content">
+                            <!-- Metadata injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="empty-state" class="empty-state">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h2>No case selected</h2>
+                <p>Please select a case from the sidebar to view its ASPECTS analysis.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

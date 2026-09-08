@@ -38,6 +38,7 @@ aspects-split = "aspects_stroke.split:main"
 aspects-train = "aspects_stroke.train:main"
 aspects-infer = "aspects_stroke.infer:main"
 aspects-compare = "aspects_stroke.compare:main"
+aspects-viewer = "aspects_stroke.viewer:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
