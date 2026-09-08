@@ -25,6 +25,7 @@ class AISDSliceDataset(Dataset):
         if max_cases is not None:
             rows = rows[:max_cases]
         self.slices: list[tuple[str, str, int]] = []
+        self._volume_cache: dict[tuple[str, str], tuple[np.ndarray, np.ndarray]] = {}
         for row in rows:
             ct_image = nib.load(row["ct_path"])
             for index in range(ct_image.shape[2]):
@@ -35,8 +36,13 @@ class AISDSliceDataset(Dataset):
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         ct_path, mask_path, slice_index = self.slices[index]
-        ct = nib.load(ct_path).get_fdata(dtype=np.float32)
-        mask = nib.load(mask_path).get_fdata()
+        cache_key = (ct_path, mask_path)
+        if cache_key not in self._volume_cache:
+            self._volume_cache[cache_key] = (
+                nib.load(ct_path).get_fdata(dtype=np.float32),
+                nib.load(mask_path).get_fdata(),
+            )
+        ct, mask = self._volume_cache[cache_key]
         image = normalize_ct(ct[:, :, slice_index])
         mirrored = np.flip(image, axis=0).copy()
         difference = np.clip((mirrored - image) / np.maximum(mirrored, 0.05), 0.0, 1.0)
