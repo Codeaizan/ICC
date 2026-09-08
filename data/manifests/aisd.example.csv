@@ -1,0 +1,3 @@
+case_id,ct_path,lesion_path,split
+# Remove this comment and replace the example row with real AISD paths.
+example_001,data/raw/aisd/example_001_ct.nii.gz,data/raw/aisd/example_001_mask.nii.gz,train

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aspects-stroke"
+version = "0.1.0"
+description = "Explainable research baseline for automated ASPECTS scoring from NCCT"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.26",
+  "SimpleITK>=2.3",
+  "nibabel>=5.2",
+  "PyYAML>=6.0",
+  "matplotlib>=3.8",
+  "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+ml = [
+  "torch>=2.2",
+  "monai>=1.3",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+aspects-score = "aspects_stroke.cli:main"
+aspects-batch = "aspects_stroke.batch:main"
+aspects-convert = "aspects_stroke.convert:main"
+aspects-mask-convert = "aspects_stroke.mask_convert:main"
+aspects-convert-dataset = "aspects_stroke.dataset_convert:main"
+aspects-evaluate = "aspects_stroke.evaluate:main"
+aspects-tune = "aspects_stroke.tune:main"
+aspects-split = "aspects_stroke.split:main"
+aspects-train = "aspects_stroke.train:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
