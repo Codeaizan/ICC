@@ -1,0 +1,347 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 1rem 2rem 2rem;
+  position: relative;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  z-index: 2;
+  width: 100%;
+}
+
+.hero-text-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.hero-title {
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  text-shadow: 0 0 40px rgba(91, 185, 166, 0.2);
+  font-size: 3.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  max-width: 480px;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+/* Right Side — Sticky Wrapper constrains the sticky to hero height */
+.hero-visual-sticky-wrapper {
+  align-self: stretch;
+  /* fill the full grid row height */
+}
+
+.hero-visual {
+  position: sticky;
+  top: 100px;
+  /* navbar height + breathing room */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
+  z-index: 1;
+}
+
+/* ─── Square Floating Plate ─── */
+.square-plate {
+  position: relative;
+  width: 550px;
+  height: 550px;
+  margin-top: 60px;
+  border-radius: 24px;
+  /* Slightly rounded corners */
+  overflow: hidden;
+  /* CT image stays inside */
+
+  /* Dark teal/black transparent glass-like background */
+  background: radial-gradient(circle at center,
+      rgba(20, 45, 45, 0.4) 0%,
+      rgba(7, 25, 26, 0.7) 60%,
+      rgba(7, 25, 26, 0.9) 100%);
+
+  /* Subtle backdrop/glass effect */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  /* Thin neon teal outline */
+  border: 1px solid rgba(91, 185, 166, 0.3);
+
+  /* Very subtle teal glow around the plate */
+  box-shadow:
+    0 10px 40px rgba(7, 25, 26, 0.8),
+    0 0 40px rgba(91, 185, 166, 0.08),
+    inset 0 0 60px rgba(7, 25, 26, 0.5);
+
+  /* Subtle floating animation */
+  animation: squarePlateFloat 6s ease-in-out infinite;
+}
+
+/* Brain image — close-up inside the plate */
+.brain-image-zoomed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  /* Zoom in significantly to crop out the futuristic background */
+  transform: scale(1.6);
+  transform-origin: center center;
+
+  /* Blend modes to make it feel integrated and medical */
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  filter: contrast(1.1) brightness(1.05);
+}
+
+/* ─── Animations ─── */
+@keyframes squarePlateFloat {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .square-plate {
+    animation: none;
+  }
+}
+
+/* Upload Card on Left */
+.analysis-card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  gap: 1rem;
+  z-index: 1;
+}
+
+.analysis-card:hover {
+  transform: none;
+}
+
+.upload-dropzone {
+  border: 1px dashed rgba(91, 185, 166, 0.4);
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(7, 25, 26, 0.4);
+  transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: var(--color-accent);
+  background: rgba(91, 185, 166, 0.05);
+}
+
+.upload-icon {
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.upload-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtitle {
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.upload-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 1rem 0;
+  color: rgba(167, 227, 212, 0.4);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.upload-divider::before,
+.upload-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(167, 227, 212, 0.2);
+}
+
+.upload-divider span {
+  padding: 0 1rem;
+}
+
+.btn-browse {
+  width: auto;
+  padding: 0.6rem 2rem;
+  background: rgba(91, 185, 166, 0.1);
+}
+
+.scan-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-mint-light);
+  letter-spacing: 0.5px;
+}
+
+.input-group input {
+  background: rgba(7, 25, 26, 0.6);
+  border: 1px solid rgba(91, 185, 166, 0.3);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 10px rgba(91, 185, 166, 0.2);
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.analyze-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+}
+
+.analyze-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.analyze-btn.disabled:hover {
+  background-color: var(--color-accent);
+  transform: none;
+}
+
+.demo-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: rgba(167, 227, 212, 0.4);
+  font-size: 0.85rem;
+}
+
+.demo-divider::before,
+.demo-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(167, 227, 212, 0.2);
+}
+
+.demo-divider span {
+  padding: 0 1rem;
+}
+
+.btn-demo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(91, 185, 166, 0.1);
+  color: var(--color-accent);
+  border: 1px solid rgba(91, 185, 166, 0.3);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-demo:hover {
+  background: rgba(91, 185, 166, 0.2);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 3rem 2rem 2rem;
+    gap: 3rem;
+    min-height: auto;
+  }
+
+  .hero-content {
+    align-items: center;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .analysis-card {
+    max-width: 100%;
+  }
+
+  .hero-visual {
+    position: relative;
+    top: auto;
+  }
+
+  .square-plate {
+    width: 300px;
+    height: 300px;
+  }
+}
