@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import mimetypes
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -14,6 +15,13 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         # The static files are located relative to this python file
         self.static_dir = Path(__file__).parent / "static"
         super().__init__(*args, **kwargs)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-type")
+        self.end_headers()
 
     def do_GET(self):
         parsed_path = urlparse(self.path).path
@@ -75,8 +83,11 @@ class ViewerHandler(SimpleHTTPRequestHandler):
             if mime_type:
                 self.send_header("Content-Type", mime_type)
             self.send_header("Content-Length", str(len(content)))
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(content)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            pass # Client aborted the request (e.g. React Strict Mode)
         except OSError:
             self.send_error(404, "File not found")
 
@@ -85,8 +96,16 @@ class ViewerHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
+
+    def send_error(self, code, message=None, explain=None):
+        self.log_error("code %d, message %s", code, message)
+        self.send_response(code, message)
+        self.send_header("Connection", "close")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
 
     # Suppress default logging to stdout
     def log_message(self, format, *args):
@@ -108,7 +127,7 @@ def main():
         return ViewerHandler(*args, output_dir=output_dir, **kwargs)
 
     server_address = ('', args.port)
-    httpd = HTTPServer(server_address, handler_factory)
+    httpd = ThreadingHTTPServer(server_address, handler_factory)
     
     print(f"Starting viewer at http://localhost:{args.port}")
     print(f"Serving outputs from: {output_dir}")
